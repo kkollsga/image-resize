@@ -133,38 +133,119 @@
             gap: 0.35rem;
             font-size: 0.7rem;
             background: #1f2937;
-            padding: 0.35rem 0.6rem;
+            padding: 0.3rem 0.55rem;
             border-radius: 2rem;
+            border: 1px solid #293548;
         }
 
         .setting-group label {
-            color: #6b7280;
+            color: #9ca3af;
             font-size: 0.6rem;
+            font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-right: 0.1rem;
         }
 
-        .ratio-input {
-            width: 2.2rem;
-            background-color: transparent;
-            border: 1px solid #374151;
+        .dim-label {
             color: #e5e7eb;
-            padding: 0.2rem 0.2rem;
-            border-radius: 0.25rem;
-            font-size: 0.75rem;
-            text-align: center;
-            font-family: inherit;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-variant-numeric: tabular-nums;
+            padding: 0.1rem 0.2rem;
+            border-radius: 0.2rem;
+            transition: background 0.15s;
         }
 
-        .ratio-input:focus {
+        .dim-label:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .dim-label .dim-sub {
+            color: #6b7280;
+            font-size: 0.55rem;
+            margin-left: 0.15rem;
+        }
+
+        /* Dimensions Modal */
+        .dim-modal {
+            background-color: #1f2937;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            width: 100%;
+            max-width: 260px;
+            border: 1px solid #374151;
+        }
+
+        .dim-modal h2 {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            color: #e5e7eb;
+        }
+
+        .dim-modal .mode-toggle {
+            display: flex;
+            background: #111827;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            border: 1px solid #374151;
+            margin-bottom: 0.75rem;
+        }
+
+        .dim-modal .mode-toggle button {
+            flex: 1;
+            padding: 0.4rem 0.5rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            background: transparent;
+            color: #6b7280;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .dim-modal .mode-toggle button.active {
+            background: #374151;
+            color: #e5e7eb;
+        }
+
+        .dim-modal .dim-fields {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .dim-modal .dim-field-input {
+            width: 4.5rem;
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            padding: 0.45rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            text-align: center;
+            font-family: inherit;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .dim-modal .dim-field-input:focus {
             outline: none;
             border-color: #3b82f6;
         }
 
-        .ratio-separator {
+        .dim-modal .dim-sep {
             color: #4b5563;
             font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .dim-modal .dim-unit {
+            color: #6b7280;
             font-size: 0.7rem;
         }
 
@@ -176,14 +257,15 @@
         }
 
         .color-swatch {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 1.3rem;
+            height: 1.3rem;
             border-radius: 50%;
-            border: 2px solid #374151;
+            border: 2px solid #4b5563;
             cursor: pointer;
             position: relative;
             overflow: hidden;
             flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
         }
 
         .color-swatch input[type="color"] {
@@ -199,14 +281,15 @@
 
         .color-hex {
             width: 4.2rem;
-            background-color: transparent;
+            background-color: rgba(0,0,0,0.15);
             border: 1px solid #374151;
             color: #e5e7eb;
-            padding: 0.2rem 0.3rem;
+            padding: 0.25rem 0.3rem;
             border-radius: 0.25rem;
             font-size: 0.65rem;
-            font-family: monospace;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
             text-align: center;
+            letter-spacing: 0.02em;
         }
 
         .color-hex:focus {
@@ -229,14 +312,23 @@
             transition: all 0.15s;
         }
 
-        .eyedropper-btn:hover {
+        .eyedropper-btn:hover,
+        .eyedropper-btn.active {
             border-color: #3b82f6;
             color: #3b82f6;
+        }
+
+        .eyedropper-btn.active {
+            background: rgba(59, 130, 246, 0.15);
         }
 
         .eyedropper-btn svg {
             width: 0.7rem;
             height: 0.7rem;
+        }
+
+        #canvas-container.pipette-mode {
+            cursor: crosshair;
         }
 
         /* Canvas Area */
@@ -576,7 +668,6 @@
         @media (max-width: 360px) {
             .setting-group { padding: 0.3rem 0.45rem; gap: 0.25rem; }
             .color-hex { width: 3.8rem; font-size: 0.6rem; }
-            .ratio-input { width: 2rem; font-size: 0.7rem; }
             .setting-group label { font-size: 0.55rem; }
         }
 
@@ -615,11 +706,9 @@
         <div id="editor-section">
             <!-- Settings Bar -->
             <div class="settings-bar">
-                <div class="setting-group">
-                    <label>Ratio</label>
-                    <input type="number" class="ratio-input" id="ratio-w" value="3" min="1" max="100">
-                    <span class="ratio-separator">:</span>
-                    <input type="number" class="ratio-input" id="ratio-h" value="4" min="1" max="100">
+                <div class="setting-group" id="dim-trigger" title="Change dimensions">
+                    <label>Size</label>
+                    <span class="dim-label" id="dim-display">3:4</span>
                 </div>
                 <div class="setting-group">
                     <label>Fill</label>
@@ -628,12 +717,38 @@
                             <input type="color" id="color-picker" value="#ffffff">
                         </div>
                         <input type="text" class="color-hex" id="color-hex" value="#ffffff" maxlength="7" spellcheck="false">
-                        <button class="eyedropper-btn" id="eyedropper-btn" title="Pick color from screen">
+                        <button class="eyedropper-btn" id="eyedropper-btn" title="Pick color from image">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M2 22l1-1h3l9-9-4-4-9 9v3l-1 1z"/>
                                 <path d="M13 7l3.293-3.293a1 1 0 011.414 0l2.586 2.586a1 1 0 010 1.414L17 11"/>
                             </svg>
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dimensions Modal -->
+            <div id="dim-dialog" class="modal-overlay hidden">
+                <div class="dim-modal">
+                    <h2>Canvas Dimensions</h2>
+                    <div class="mode-toggle">
+                        <button id="mode-ratio" class="active">Ratio</button>
+                        <button id="mode-size">Size</button>
+                    </div>
+                    <div class="dim-fields" id="ratio-fields">
+                        <input type="number" class="dim-field-input" id="ratio-w" value="3" min="1" max="100">
+                        <span class="dim-sep">:</span>
+                        <input type="number" class="dim-field-input" id="ratio-h" value="4" min="1" max="100">
+                    </div>
+                    <div class="dim-fields" id="size-fields" style="display:none;">
+                        <input type="number" class="dim-field-input" id="size-w" value="900" min="1" max="9999">
+                        <span class="dim-sep">&times;</span>
+                        <input type="number" class="dim-field-input" id="size-h" value="1200" min="1" max="9999">
+                        <span class="dim-unit">px</span>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="dim-cancel" class="modal-btn modal-cancel">Cancel</button>
+                        <button id="dim-apply" class="modal-btn modal-confirm">Apply</button>
                     </div>
                 </div>
             </div>
@@ -734,9 +849,20 @@
         const downloadBtn = document.getElementById('download-btn');
         const newImageBtn = document.getElementById('new-image-btn');
 
-        // Ratio inputs
+        // Dimension controls
+        const dimTrigger = document.getElementById('dim-trigger');
+        const dimDisplay = document.getElementById('dim-display');
+        const dimDialog = document.getElementById('dim-dialog');
+        const modeRatioBtn = document.getElementById('mode-ratio');
+        const modeSizeBtn = document.getElementById('mode-size');
+        const ratioFieldsEl = document.getElementById('ratio-fields');
+        const sizeFieldsEl = document.getElementById('size-fields');
         const ratioW = document.getElementById('ratio-w');
         const ratioH = document.getElementById('ratio-h');
+        const sizeW = document.getElementById('size-w');
+        const sizeH = document.getElementById('size-h');
+        const dimCancel = document.getElementById('dim-cancel');
+        const dimApply = document.getElementById('dim-apply');
 
         // Color controls
         const colorPicker = document.getElementById('color-picker');
@@ -761,27 +887,81 @@
         let optimalWidth = 900, optimalHeight = 1200;
         let bgColor = '#ffffff';
         let aspectW = 3, aspectH = 4;
+        let sizeMode = 'ratio'; // 'ratio' or 'size'
+        let pipetteActive = false;
 
-        // ----- Aspect ratio -----
-        function getAspectRatio() {
-            return aspectW / aspectH;
+        // ----- Dimensions modal -----
+        function updateDimDisplay() {
+            if (sizeMode === 'ratio') {
+                dimDisplay.innerHTML = aspectW + ':' + aspectH;
+            } else {
+                dimDisplay.innerHTML = aspectW + '&times;' + aspectH + '<span class="dim-sub">px</span>';
+            }
         }
 
-        function updateAspectRatio() {
-            const w = parseInt(ratioW.value) || 3;
-            const h = parseInt(ratioH.value) || 4;
-            aspectW = Math.max(1, w);
-            aspectH = Math.max(1, h);
+        dimTrigger.addEventListener('click', () => {
+            // Sync modal fields with current state
+            if (sizeMode === 'ratio') {
+                modeRatioBtn.classList.add('active');
+                modeSizeBtn.classList.remove('active');
+                ratioFieldsEl.style.display = '';
+                sizeFieldsEl.style.display = 'none';
+                ratioW.value = aspectW;
+                ratioH.value = aspectH;
+            } else {
+                modeSizeBtn.classList.add('active');
+                modeRatioBtn.classList.remove('active');
+                ratioFieldsEl.style.display = 'none';
+                sizeFieldsEl.style.display = '';
+                sizeW.value = aspectW;
+                sizeH.value = aspectH;
+            }
+            dimDialog.classList.remove('hidden');
+        });
+
+        modeRatioBtn.addEventListener('click', () => {
+            modeRatioBtn.classList.add('active');
+            modeSizeBtn.classList.remove('active');
+            ratioFieldsEl.style.display = '';
+            sizeFieldsEl.style.display = 'none';
+        });
+
+        modeSizeBtn.addEventListener('click', () => {
+            modeSizeBtn.classList.add('active');
+            modeRatioBtn.classList.remove('active');
+            ratioFieldsEl.style.display = 'none';
+            sizeFieldsEl.style.display = '';
+        });
+
+        dimCancel.addEventListener('click', () => dimDialog.classList.add('hidden'));
+        dimDialog.addEventListener('click', (e) => {
+            if (e.target === dimDialog) dimDialog.classList.add('hidden');
+        });
+
+        dimApply.addEventListener('click', () => {
+            if (modeRatioBtn.classList.contains('active')) {
+                sizeMode = 'ratio';
+                aspectW = Math.max(1, parseInt(ratioW.value) || 3);
+                aspectH = Math.max(1, parseInt(ratioH.value) || 4);
+            } else {
+                sizeMode = 'size';
+                aspectW = Math.max(1, parseInt(sizeW.value) || 900);
+                aspectH = Math.max(1, parseInt(sizeH.value) || 1200);
+            }
+            updateDimDisplay();
             const pct = (aspectH / aspectW) * 100;
             canvasAspectEl.style.paddingBottom = pct + '%';
             if (img) {
                 setupCanvas();
                 initializeImage();
             }
-        }
+            dimDialog.classList.add('hidden');
+        });
 
-        ratioW.addEventListener('change', updateAspectRatio);
-        ratioH.addEventListener('change', updateAspectRatio);
+        // ----- Aspect ratio -----
+        function getAspectRatio() {
+            return aspectW / aspectH;
+        }
 
         // ----- Background color -----
         function updateBgColor(hex) {
@@ -797,24 +977,36 @@
         colorHex.addEventListener('change', () => updateBgColor(colorHex.value));
         colorSwatch.style.backgroundColor = bgColor;
 
-        // Eyedropper (EyeDropper API)
-        eyedropperBtn.addEventListener('click', async () => {
-            if (!window.EyeDropper) {
-                alert('EyeDropper API is not supported in this browser. Try Chrome or Edge.');
-                return;
-            }
-            try {
-                const dropper = new EyeDropper();
-                const result = await dropper.open();
-                updateBgColor(result.sRGBHex);
-            } catch (e) {
-                // user cancelled
-            }
-        });
+        // ----- Pipette (pick from canvas) -----
+        function togglePipette() {
+            pipetteActive = !pipetteActive;
+            eyedropperBtn.classList.toggle('active', pipetteActive);
+            canvasContainer.classList.toggle('pipette-mode', pipetteActive);
+        }
 
-        // Hide eyedropper button if API not available
-        if (!window.EyeDropper) {
-            eyedropperBtn.style.display = 'none';
+        eyedropperBtn.addEventListener('click', togglePipette);
+
+        function pickColorFromCanvas(e) {
+            if (!pipetteActive) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            let cx, cy;
+            if (e.touches) {
+                cx = (e.touches[0].clientX - rect.left) * dpr;
+                cy = (e.touches[0].clientY - rect.top) * dpr;
+            } else {
+                cx = (e.clientX - rect.left) * dpr;
+                cy = (e.clientY - rect.top) * dpr;
+            }
+            const pixel = ctx.getImageData(cx, cy, 1, 1).data;
+            const hex = '#' + [pixel[0], pixel[1], pixel[2]].map(v => v.toString(16).padStart(2, '0')).join('');
+            updateBgColor(hex);
+            // Deactivate pipette after pick
+            pipetteActive = false;
+            eyedropperBtn.classList.remove('active');
+            canvasContainer.classList.remove('pipette-mode');
         }
 
         // ----- Canvas setup -----
@@ -965,6 +1157,10 @@
         // ----- Touch events -----
         canvasContainer.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            if (pipetteActive && e.touches.length === 1) {
+                pickColorFromCanvas(e);
+                return;
+            }
             if (e.touches.length === 1) {
                 isDragging = true;
                 const pos = getEventPos(e);
@@ -1011,6 +1207,10 @@
 
         // ----- Mouse events -----
         canvasContainer.addEventListener('mousedown', (e) => {
+            if (pipetteActive) {
+                pickColorFromCanvas(e);
+                return;
+            }
             isDragging = true;
             const pos = getEventPos(e);
             startX = pos.x - imgX;
@@ -1102,13 +1302,22 @@
 
         downloadBtn.addEventListener('click', () => {
             if (!img) return;
-            const opt = calculateOptimalDimensions();
-            optimalWidth = opt.width;
-            optimalHeight = opt.height;
-            widthInput.value = optimalWidth;
-            heightInput.value = optimalHeight;
-            sizeInfo.textContent = 'Using original resolution';
-            sizeInfo.style.color = '#10b981';
+            if (sizeMode === 'size') {
+                optimalWidth = aspectW;
+                optimalHeight = aspectH;
+                widthInput.value = aspectW;
+                heightInput.value = aspectH;
+                sizeInfo.textContent = 'Using specified dimensions';
+                sizeInfo.style.color = '#10b981';
+            } else {
+                const opt = calculateOptimalDimensions();
+                optimalWidth = opt.width;
+                optimalHeight = opt.height;
+                widthInput.value = optimalWidth;
+                heightInput.value = optimalHeight;
+                sizeInfo.textContent = 'Using original resolution';
+                sizeInfo.style.color = '#10b981';
+            }
             exportDialog.classList.remove('hidden');
         });
 
