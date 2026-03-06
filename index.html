@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>3x4 Image Cropper</title>
+    <title>Image Cropper</title>
     <style>
         * {
             margin: 0;
@@ -14,83 +14,232 @@
             -webkit-user-select: none;
             user-select: none;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: #111827;
-            color: white;
+            color: #e5e7eb;
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
             position: fixed;
             width: 100%;
         }
-        
+
         .main-container {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            padding: env(safe-area-inset-top, 20px) 0.5rem env(safe-area-inset-bottom, 20px);
+            padding: env(safe-area-inset-top, 12px) 0.75rem env(safe-area-inset-bottom, 12px);
             display: flex;
             flex-direction: column;
             max-width: 100vw;
             margin: 0 auto;
         }
-        
-        h1 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            padding: 0.25rem 0;
-            text-align: center;
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0;
             flex-shrink: 0;
+            gap: 0.5rem;
         }
-        
+
+        .header h1 {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #9ca3af;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Upload Section */
         #upload-section {
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 1rem;
+            padding: 1.5rem;
         }
-        
+
         .upload-box {
             background-color: #1f2937;
-            border: 2px dashed #4b5563;
-            border-radius: 0.5rem;
-            padding: 2rem;
+            border: 2px dashed #374151;
+            border-radius: 0.75rem;
+            padding: 3rem 2rem;
             text-align: center;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
         }
-        
-        .upload-box:hover {
-            background-color: #374151;
+
+        .upload-box:hover, .upload-box.drag-over {
+            background-color: #1a2538;
+            border-color: #3b82f6;
         }
-        
+
         .upload-icon {
-            width: 3rem;
-            height: 3rem;
-            margin: 0 auto 1rem;
-            color: #9ca3af;
+            width: 2.5rem;
+            height: 2.5rem;
+            margin: 0 auto 0.75rem;
+            color: #4b5563;
         }
-        
+
         .upload-text {
-            color: #9ca3af;
+            color: #6b7280;
+            font-size: 0.85rem;
         }
-        
+
+        .upload-text span {
+            color: #3b82f6;
+        }
+
+        .upload-hint {
+            color: #4b5563;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+        }
+
         input[type="file"] {
             display: none;
         }
-        
+
+        /* Editor Section */
         #editor-section {
             display: none;
             flex: 1;
             flex-direction: column;
             overflow: hidden;
+            gap: 0.25rem;
         }
-        
+
+        /* Settings Bar (aspect ratio + padding color) */
+        .settings-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            padding: 0.375rem 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.7rem;
+            background: #1f2937;
+            padding: 0.35rem 0.6rem;
+            border-radius: 2rem;
+        }
+
+        .setting-group label {
+            color: #6b7280;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-right: 0.1rem;
+        }
+
+        .ratio-input {
+            width: 2.2rem;
+            background-color: transparent;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            padding: 0.2rem 0.2rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .ratio-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .ratio-separator {
+            color: #4b5563;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+
+        .color-swatch-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .color-swatch {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            border: 2px solid #374151;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .color-swatch input[type="color"] {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: calc(100% + 8px);
+            height: calc(100% + 8px);
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .color-hex {
+            width: 4.2rem;
+            background-color: transparent;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            padding: 0.2rem 0.3rem;
+            border-radius: 0.25rem;
+            font-size: 0.65rem;
+            font-family: monospace;
+            text-align: center;
+        }
+
+        .color-hex:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .eyedropper-btn {
+            background: transparent;
+            border: 1px solid #374151;
+            color: #6b7280;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.15s;
+        }
+
+        .eyedropper-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .eyedropper-btn svg {
+            width: 0.7rem;
+            height: 0.7rem;
+        }
+
+        /* Canvas Area */
         .canvas-wrapper {
             flex: 1;
             min-height: 0;
@@ -99,23 +248,22 @@
             justify-content: center;
             padding: 0.25rem;
         }
-        
+
         .canvas-container-outer {
             position: relative;
-            background-color: white;
             border-radius: 0.5rem;
             overflow: hidden;
             width: 100%;
-            max-width: min(100%, 300px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            max-width: min(100%, 360px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
         }
-        
+
         .canvas-aspect-ratio {
             position: relative;
             width: 100%;
             padding-bottom: 133.33%;
         }
-        
+
         #canvas-container {
             position: absolute;
             top: 0;
@@ -123,333 +271,423 @@
             right: 0;
             bottom: 0;
         }
-        
+
         #canvas {
             width: 100%;
             height: 100%;
             display: block;
         }
-        
-        .crop-area {
+
+        .drop-overlay {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            border: 2px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.15);
+            border: 2px dashed #3b82f6;
+            border-radius: 0.5rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            z-index: 10;
         }
-        
+
+        .drop-overlay.visible {
+            display: flex;
+        }
+
+        .drop-overlay span {
+            color: #3b82f6;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(17, 24, 39, 0.85);
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        /* Controls */
         .controls {
             flex-shrink: 0;
-            padding: 0.25rem 0.5rem 1rem;
-            max-width: 400px;
+            padding: 0.25rem 0.5rem 0.75rem;
+            max-width: 420px;
             margin: 0 auto;
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
         }
-        
+
         .control-row {
             display: flex;
-            gap: 0.25rem;
-            margin-bottom: 0.375rem;
+            gap: 0.5rem;
         }
-        
+
         .slider-group {
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.35rem;
             background-color: #1f2937;
-            padding: 0.375rem 0.5rem;
-            border-radius: 0.375rem;
-            font-size: 0.7rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 2rem;
         }
-        
+
         .slider-label {
-            color: #9ca3af;
-            width: 2rem;
-            font-size: 0.65rem;
+            color: #6b7280;
+            width: 2.25rem;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
-        
+
         input[type="range"] {
             flex: 1;
             -webkit-appearance: none;
             appearance: none;
-            height: 0.25rem;
-            background: #4b5563;
-            border-radius: 0.125rem;
+            height: 3px;
+            background: #374151;
+            border-radius: 2px;
             outline: none;
         }
-        
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 0.875rem;
-            height: 0.875rem;
+            width: 14px;
+            height: 14px;
             background: #3b82f6;
             border-radius: 50%;
             cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
         }
-        
+
         input[type="range"]::-moz-range-thumb {
-            width: 0.875rem;
-            height: 0.875rem;
+            width: 14px;
+            height: 14px;
             background: #3b82f6;
             border-radius: 50%;
             cursor: pointer;
             border: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
         }
-        
+
         .slider-value {
-            width: 2rem;
+            width: 2.25rem;
             text-align: right;
             font-size: 0.65rem;
+            color: #9ca3af;
+            font-variant-numeric: tabular-nums;
         }
-        
+
         .help-text {
             font-size: 0.6rem;
-            color: #9ca3af;
+            color: #4b5563;
             text-align: center;
-            margin-bottom: 0.375rem;
         }
-        
-        .button-group {
+
+        .button-row {
             display: flex;
             gap: 0.375rem;
-            margin-bottom: 0.375rem;
+            align-items: center;
         }
-        
+
         button {
-            padding: 0.5rem 0.75rem;
             border-radius: 0.375rem;
             border: none;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.15s;
             color: white;
         }
-        
+
         button:hover {
-            opacity: 0.8;
+            opacity: 0.85;
         }
-        
-        .btn-reset {
-            flex: 1;
-            background-color: #374151;
+
+        .btn-icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 50%;
+            padding: 0;
+            color: #9ca3af;
+            flex-shrink: 0;
         }
-        
+
+        .btn-icon:hover {
+            border-color: #4b5563;
+            color: #e5e7eb;
+            opacity: 1;
+        }
+
+        .btn-icon svg {
+            width: 0.9rem;
+            height: 0.9rem;
+        }
+
         .btn-download {
             flex: 1;
             background-color: #3b82f6;
             font-weight: 600;
+            padding: 0.6rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
         }
-        
-        .btn-new {
-            width: 100%;
-            background-color: #1f2937;
-            font-size: 0.7rem;
-            padding: 0.375rem;
-        }
-        
+
         .hidden {
             display: none !important;
         }
-        
-        /* Export Dialog Styles */
+
+        /* Export Dialog */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.75);
+            background-color: rgba(0, 0, 0, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             padding: 1rem;
+            backdrop-filter: blur(4px);
         }
-        
+
         .modal {
             background-color: #1f2937;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             padding: 1.5rem;
             width: 100%;
             max-width: 280px;
+            border: 1px solid #374151;
         }
-        
+
         .modal h2 {
-            font-size: 1rem;
-            margin-bottom: 0.75rem;
-            color: white;
-        }
-        
-        .dimension-inputs {
+            font-size: 0.9rem;
+            font-weight: 500;
             margin-bottom: 1rem;
+            color: #e5e7eb;
         }
-        
+
+        .dimension-inputs {
+            margin-bottom: 0.75rem;
+        }
+
         .input-group {
             margin-bottom: 0.75rem;
         }
-        
+
         .input-group label {
             display: block;
-            font-size: 0.7rem;
-            color: #9ca3af;
+            font-size: 0.65rem;
+            color: #6b7280;
             margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
-        
+
         .input-wrapper {
             display: flex;
             gap: 0.5rem;
             align-items: center;
         }
-        
+
         .input-wrapper input {
             flex: 1;
             background-color: #111827;
             border: 1px solid #374151;
-            color: white;
+            color: #e5e7eb;
             padding: 0.5rem;
             border-radius: 0.375rem;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
         }
-        
+
         .input-wrapper input:focus {
             outline: none;
             border-color: #3b82f6;
         }
-        
+
         .input-wrapper span {
-            color: #9ca3af;
-            font-size: 0.75rem;
+            color: #6b7280;
+            font-size: 0.7rem;
             width: 2rem;
         }
-        
+
         .modal-actions {
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
         }
-        
+
         .modal-btn {
             flex: 1;
-            padding: 0.625rem;
+            padding: 0.6rem;
             border-radius: 0.375rem;
             border: none;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.15s;
             color: white;
         }
-        
+
         .modal-btn:hover {
-            opacity: 0.8;
+            opacity: 0.85;
         }
-        
+
         .modal-cancel {
             background-color: #374151;
         }
-        
+
         .modal-confirm {
             background-color: #3b82f6;
             font-weight: 600;
         }
-        
+
         .size-info {
             font-size: 0.65rem;
             color: #10b981;
             text-align: center;
-            margin-top: 0.5rem;
             padding: 0.375rem;
             background-color: #111827;
             border-radius: 0.25rem;
         }
-        
+
+        /* Small height (landscape phones, short windows) */
         @media (max-height: 700px) {
             .canvas-container-outer {
                 max-width: min(100%, 250px);
             }
-            
-            h1 {
-                font-size: 0.8rem;
-                padding: 0.125rem 0;
+            .header h1 { font-size: 0.75rem; }
+            .controls { padding: 0.125rem 0.5rem 0.5rem; gap: 0.25rem; }
+            .settings-bar { padding: 0.25rem 0.5rem; }
+            .btn-icon { width: 2rem; height: 2rem; }
+            .btn-download { padding: 0.45rem 0.75rem; font-size: 0.75rem; }
+        }
+
+        /* Narrow screens (small phones) */
+        @media (max-width: 360px) {
+            .setting-group { padding: 0.3rem 0.45rem; gap: 0.25rem; }
+            .color-hex { width: 3.8rem; font-size: 0.6rem; }
+            .ratio-input { width: 2rem; font-size: 0.7rem; }
+            .setting-group label { font-size: 0.55rem; }
+        }
+
+        /* Wide screens (desktop) */
+        @media (min-width: 768px) {
+            .canvas-container-outer {
+                max-width: min(100%, 440px);
             }
-            
             .controls {
-                padding: 0.125rem 0.5rem 0.5rem;
-            }
-            
-            button {
-                padding: 0.375rem 0.5rem;
-                font-size: 0.75rem;
+                max-width: 480px;
             }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <h1>3x4 Image Cropper</h1>
-        
+        <div class="header">
+            <h1>Image Cropper</h1>
+        </div>
+
         <!-- Upload Section -->
         <div id="upload-section">
             <label for="image-upload">
-                <div class="upload-box">
+                <div class="upload-box" id="upload-box">
                     <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <p class="upload-text">Tap to upload image</p>
+                    <p class="upload-text">Drop image here or <span>browse</span></p>
+                    <p class="upload-hint">Supports JPG, PNG, WebP</p>
                 </div>
             </label>
             <input type="file" id="image-upload" accept="image/*">
         </div>
-        
+
         <!-- Editor Section -->
         <div id="editor-section">
-            <div class="canvas-wrapper">
-                <div class="canvas-container-outer">
-                    <div class="canvas-aspect-ratio">
-                        <div id="canvas-container">
-                            <canvas id="canvas"></canvas>
-                            <div class="crop-area"></div>
+            <!-- Settings Bar -->
+            <div class="settings-bar">
+                <div class="setting-group">
+                    <label>Ratio</label>
+                    <input type="number" class="ratio-input" id="ratio-w" value="3" min="1" max="100">
+                    <span class="ratio-separator">:</span>
+                    <input type="number" class="ratio-input" id="ratio-h" value="4" min="1" max="100">
+                </div>
+                <div class="setting-group">
+                    <label>Fill</label>
+                    <div class="color-swatch-wrapper">
+                        <div class="color-swatch" id="color-swatch">
+                            <input type="color" id="color-picker" value="#ffffff">
                         </div>
+                        <input type="text" class="color-hex" id="color-hex" value="#ffffff" maxlength="7" spellcheck="false">
+                        <button class="eyedropper-btn" id="eyedropper-btn" title="Pick color from screen">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 22l1-1h3l9-9-4-4-9 9v3l-1 1z"/>
+                                <path d="M13 7l3.293-3.293a1 1 0 011.414 0l2.586 2.586a1 1 0 010 1.414L17 11"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
-            
+
+            <div class="canvas-wrapper" id="canvas-wrapper">
+                <div class="canvas-container-outer">
+                    <div class="canvas-aspect-ratio" id="canvas-aspect">
+                        <div id="canvas-container">
+                            <canvas id="canvas"></canvas>
+                        </div>
+                    </div>
+                    <div class="drop-overlay" id="drop-overlay">
+                        <span>Drop to replace</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="controls">
                 <div class="control-row">
                     <div class="slider-group">
                         <span class="slider-label">Zoom</span>
-                        <input type="range" id="zoom-slider" min="0.1" max="3" step="0.1" value="1">
+                        <input type="range" id="zoom-slider" min="0.1" max="3" step="0.01" value="1">
                         <span id="zoom-value" class="slider-value">1.0x</span>
                     </div>
                     <div class="slider-group">
                         <span class="slider-label">Rotate</span>
                         <input type="range" id="rotate-slider" min="-180" max="180" step="1" value="0">
-                        <span id="rotate-value" class="slider-value">0°</span>
+                        <span id="rotate-value" class="slider-value">0</span>
                     </div>
                 </div>
-                
-                <div class="help-text">
-                    Drag to move • Pinch to zoom • Twist to rotate
+
+                <p class="help-text">Drag to move &middot; Scroll to zoom &middot; Pinch &amp; twist on touch</p>
+
+                <div class="button-row">
+                    <button id="new-image-btn" class="btn-icon" title="New image">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+                        </svg>
+                    </button>
+                    <button id="reset-btn" class="btn-icon" title="Reset position">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 1 3.4 7"/><polyline points="3 22 3 16 9 16"/>
+                        </svg>
+                    </button>
+                    <button id="download-btn" class="btn-download">Export</button>
                 </div>
-                
-                <div class="button-group">
-                    <button id="reset-btn" class="btn-reset">Reset</button>
-                    <button id="download-btn" class="btn-download">Download 3x4</button>
-                </div>
-                
-                <button id="new-image-btn" class="btn-new">New Image</button>
             </div>
         </div>
-        
+
         <!-- Export Dialog -->
         <div id="export-dialog" class="modal-overlay hidden">
             <div class="modal">
-                <h2>Export Size</h2>
-                
+                <h2>Export Settings</h2>
+
                 <div class="dimension-inputs">
                     <div class="input-group">
                         <label>Width</label>
@@ -458,7 +696,6 @@
                             <span>px</span>
                         </div>
                     </div>
-                    
                     <div class="input-group">
                         <label>Height</label>
                         <div class="input-wrapper">
@@ -467,11 +704,9 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="size-info" id="size-info">
-                    ✓ Using original resolution
-                </div>
-                
+
+                <div class="size-info" id="size-info">Using original resolution</div>
+
                 <div class="modal-actions">
                     <button id="cancel-export" class="modal-btn modal-cancel">Cancel</button>
                     <button id="confirm-export" class="modal-btn modal-confirm">Export</button>
@@ -479,14 +714,18 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         const uploadSection = document.getElementById('upload-section');
         const editorSection = document.getElementById('editor-section');
         const imageUpload = document.getElementById('image-upload');
+        const uploadBox = document.getElementById('upload-box');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const canvasContainer = document.getElementById('canvas-container');
+        const canvasWrapper = document.getElementById('canvas-wrapper');
+        const canvasAspectEl = document.getElementById('canvas-aspect');
+        const dropOverlay = document.getElementById('drop-overlay');
         const zoomSlider = document.getElementById('zoom-slider');
         const zoomValue = document.getElementById('zoom-value');
         const rotateSlider = document.getElementById('rotate-slider');
@@ -494,167 +733,238 @@
         const resetBtn = document.getElementById('reset-btn');
         const downloadBtn = document.getElementById('download-btn');
         const newImageBtn = document.getElementById('new-image-btn');
-        
-        // Export dialog elements
+
+        // Ratio inputs
+        const ratioW = document.getElementById('ratio-w');
+        const ratioH = document.getElementById('ratio-h');
+
+        // Color controls
+        const colorPicker = document.getElementById('color-picker');
+        const colorSwatch = document.getElementById('color-swatch');
+        const colorHex = document.getElementById('color-hex');
+        const eyedropperBtn = document.getElementById('eyedropper-btn');
+
+        // Export dialog
         const exportDialog = document.getElementById('export-dialog');
         const widthInput = document.getElementById('width-input');
         const heightInput = document.getElementById('height-input');
         const sizeInfo = document.getElementById('size-info');
         const cancelExport = document.getElementById('cancel-export');
         const confirmExport = document.getElementById('confirm-export');
-        
+
         let img = null;
-        let imgX = 0;
-        let imgY = 0;
-        let imgScale = 1;
-        let imgRotation = 0; // In degrees
+        let imgX = 0, imgY = 0, imgScale = 1, imgRotation = 0;
         let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let initialDistance = 0;
-        let initialScale = 1;
-        let initialRotation = 0;
-        let initialAngle = 0;
-        let optimalWidth = 900;
-        let optimalHeight = 1200;
-        
-        // Set canvas size (3:4 aspect ratio)
+        let startX = 0, startY = 0;
+        let initialDistance = 0, initialScale = 1;
+        let initialRotation = 0, initialAngle = 0;
+        let optimalWidth = 900, optimalHeight = 1200;
+        let bgColor = '#ffffff';
+        let aspectW = 3, aspectH = 4;
+
+        // ----- Aspect ratio -----
+        function getAspectRatio() {
+            return aspectW / aspectH;
+        }
+
+        function updateAspectRatio() {
+            const w = parseInt(ratioW.value) || 3;
+            const h = parseInt(ratioH.value) || 4;
+            aspectW = Math.max(1, w);
+            aspectH = Math.max(1, h);
+            const pct = (aspectH / aspectW) * 100;
+            canvasAspectEl.style.paddingBottom = pct + '%';
+            if (img) {
+                setupCanvas();
+                initializeImage();
+            }
+        }
+
+        ratioW.addEventListener('change', updateAspectRatio);
+        ratioH.addEventListener('change', updateAspectRatio);
+
+        // ----- Background color -----
+        function updateBgColor(hex) {
+            if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+            bgColor = hex;
+            colorPicker.value = hex;
+            colorSwatch.style.backgroundColor = hex;
+            colorHex.value = hex;
+            draw();
+        }
+
+        colorPicker.addEventListener('input', (e) => updateBgColor(e.target.value));
+        colorHex.addEventListener('change', () => updateBgColor(colorHex.value));
+        colorSwatch.style.backgroundColor = bgColor;
+
+        // Eyedropper (EyeDropper API)
+        eyedropperBtn.addEventListener('click', async () => {
+            if (!window.EyeDropper) {
+                alert('EyeDropper API is not supported in this browser. Try Chrome or Edge.');
+                return;
+            }
+            try {
+                const dropper = new EyeDropper();
+                const result = await dropper.open();
+                updateBgColor(result.sRGBHex);
+            } catch (e) {
+                // user cancelled
+            }
+        });
+
+        // Hide eyedropper button if API not available
+        if (!window.EyeDropper) {
+            eyedropperBtn.style.display = 'none';
+        }
+
+        // ----- Canvas setup -----
         function setupCanvas() {
             const rect = canvasContainer.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
-            
-            // Set actual canvas size with device pixel ratio for sharp rendering
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
-            
-            // Scale canvas back down using CSS
             canvas.style.width = rect.width + 'px';
             canvas.style.height = rect.height + 'px';
-            
-            // Scale context to match device pixel ratio
             ctx.scale(dpr, dpr);
-            
-            // Store display dimensions for calculations
             canvas.displayWidth = rect.width;
             canvas.displayHeight = rect.height;
         }
-        
-        // Handle image upload
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    img = new Image();
-                    img.onload = () => {
-                        showEditor();
-                        // Setup canvas after showing editor to get correct dimensions
-                        setTimeout(() => {
-                            setupCanvas();
-                            initializeImage();
-                        }, 100);
-                    };
-                    img.src = e.target.result;
+
+        // ----- Load image from file -----
+        function loadImageFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                img = new Image();
+                img.onload = () => {
+                    showEditor();
+                    setTimeout(() => {
+                        setupCanvas();
+                        initializeImage();
+                    }, 50);
                 };
-                reader.readAsDataURL(file);
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // File input
+        imageUpload.addEventListener('change', (e) => {
+            if (e.target.files[0]) loadImageFile(e.target.files[0]);
+        });
+
+        // ----- Drag & drop on upload area -----
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('drag-over');
+        });
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('drag-over');
+        });
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) loadImageFile(file);
+        });
+
+        // ----- Drag & drop on canvas (replace image) -----
+        let dragCounter = 0;
+        canvasWrapper.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            dropOverlay.classList.add('visible');
+        });
+        canvasWrapper.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        canvasWrapper.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter <= 0) {
+                dragCounter = 0;
+                dropOverlay.classList.remove('visible');
             }
         });
-        
-        // Initialize image position and scale
+        canvasWrapper.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dropOverlay.classList.remove('visible');
+            const file = e.dataTransfer.files[0];
+            if (file) loadImageFile(file);
+        });
+
+        // ----- Initialize image -----
         function initializeImage() {
             if (!img || !canvas.displayWidth) return;
-            
+
             const canvasAspect = canvas.displayWidth / canvas.displayHeight;
             const imgAspect = img.width / img.height;
-            
-            // Scale image to fit canvas
+
+            // Scale to cover canvas
             if (imgAspect > canvasAspect) {
                 imgScale = canvas.displayHeight / img.height;
             } else {
                 imgScale = canvas.displayWidth / img.width;
             }
-            
-            // Ensure minimum scale to fill canvas
             imgScale = Math.max(imgScale, Math.max(
                 canvas.displayWidth / img.width,
                 canvas.displayHeight / img.height
             ));
-            
-            // Center the image
+
             imgX = canvas.displayWidth / 2;
             imgY = canvas.displayHeight / 2;
             imgRotation = 0;
-            
+
             zoomSlider.value = imgScale;
             zoomValue.textContent = imgScale.toFixed(1) + 'x';
             rotateSlider.value = 0;
-            rotateValue.textContent = '0°';
-            
+            rotateValue.textContent = '0';
             draw();
         }
-        
-        // Draw image on canvas
+
+        // ----- Draw -----
         function draw() {
             if (!canvas.displayWidth || !canvas.displayHeight) return;
-            
-            // Clear with white background
             ctx.clearRect(0, 0, canvas.displayWidth, canvas.displayHeight);
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, canvas.displayWidth, canvas.displayHeight);
-            
+
             if (img) {
                 ctx.save();
-                
-                // Move to image center point
                 ctx.translate(imgX, imgY);
-                
-                // Apply rotation
                 ctx.rotate(imgRotation * Math.PI / 180);
-                
-                // Draw image centered at origin
                 ctx.drawImage(
-                    img, 
-                    -img.width * imgScale / 2, 
-                    -img.height * imgScale / 2, 
-                    img.width * imgScale, 
+                    img,
+                    -img.width * imgScale / 2,
+                    -img.height * imgScale / 2,
+                    img.width * imgScale,
                     img.height * imgScale
                 );
-                
                 ctx.restore();
             }
         }
-        
-        // Calculate angle between two touch points
-        function getTouchAngle(touch1, touch2) {
-            return Math.atan2(touch2.clientY - touch1.clientY, touch2.clientX - touch1.clientX) * 180 / Math.PI;
+
+        // ----- Touch helpers -----
+        function getTouchAngle(t1, t2) {
+            return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
         }
-        
-        // Calculate distance between two touch points
-        function getTouchDistance(touch1, touch2) {
-            const dx = touch2.clientX - touch1.clientX;
-            const dy = touch2.clientY - touch1.clientY;
+        function getTouchDistance(t1, t2) {
+            const dx = t2.clientX - t1.clientX;
+            const dy = t2.clientY - t1.clientY;
             return Math.sqrt(dx * dx + dy * dy);
         }
-        
-        // Get touch/mouse position relative to canvas
         function getEventPos(e) {
             const rect = canvasContainer.getBoundingClientRect();
             if (e.touches) {
-                return {
-                    x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
-                };
+                return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
             }
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
         }
-        
-        // Touch events for mobile
+
+        // ----- Touch events -----
         canvasContainer.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            
             if (e.touches.length === 1) {
                 isDragging = true;
                 const pos = getEventPos(e);
@@ -668,58 +978,44 @@
                 initialRotation = imgRotation;
             }
         });
-        
+
         canvasContainer.addEventListener('touchmove', (e) => {
             e.preventDefault();
-            
             if (e.touches.length === 1 && isDragging) {
                 const pos = getEventPos(e);
                 imgX = pos.x - startX;
                 imgY = pos.y - startY;
                 draw();
             } else if (e.touches.length === 2) {
-                // Handle pinch zoom
-                const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
-                const scale = (currentDistance / initialDistance) * initialScale;
-                imgScale = Math.max(0.1, Math.min(3, scale));
-                
-                // Handle rotation
-                const currentAngle = getTouchAngle(e.touches[0], e.touches[1]);
-                let angleDiff = currentAngle - initialAngle;
-                
-                // Normalize angle difference
-                if (angleDiff > 180) angleDiff -= 360;
-                if (angleDiff < -180) angleDiff += 360;
-                
-                imgRotation = initialRotation + angleDiff;
-                
-                // Keep rotation in -180 to 180 range
+                const dist = getTouchDistance(e.touches[0], e.touches[1]);
+                imgScale = Math.max(0.1, Math.min(3, (dist / initialDistance) * initialScale));
+                const angle = getTouchAngle(e.touches[0], e.touches[1]);
+                let diff = angle - initialAngle;
+                if (diff > 180) diff -= 360;
+                if (diff < -180) diff += 360;
+                imgRotation = initialRotation + diff;
                 if (imgRotation > 180) imgRotation -= 360;
                 if (imgRotation < -180) imgRotation += 360;
-                
-                // Update sliders
                 zoomSlider.value = imgScale;
                 zoomValue.textContent = imgScale.toFixed(1) + 'x';
                 rotateSlider.value = imgRotation;
-                rotateValue.textContent = Math.round(imgRotation) + '°';
-                
+                rotateValue.textContent = Math.round(imgRotation) + '\u00B0';
                 draw();
             }
         });
-        
+
         canvasContainer.addEventListener('touchend', (e) => {
             e.preventDefault();
             isDragging = false;
         });
-        
-        // Mouse events for desktop
+
+        // ----- Mouse events -----
         canvasContainer.addEventListener('mousedown', (e) => {
             isDragging = true;
             const pos = getEventPos(e);
             startX = pos.x - imgX;
             startY = pos.y - imgY;
         });
-        
         canvasContainer.addEventListener('mousemove', (e) => {
             if (isDragging) {
                 const pos = getEventPos(e);
@@ -728,256 +1024,159 @@
                 draw();
             }
         });
-        
-        canvasContainer.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-        
-        canvasContainer.addEventListener('mouseleave', () => {
-            isDragging = false;
-        });
-        
+        canvasContainer.addEventListener('mouseup', () => isDragging = false);
+        canvasContainer.addEventListener('mouseleave', () => isDragging = false);
+
         // Mouse wheel zoom
         canvasContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const rect = canvasContainer.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            
-            const oldScale = imgScale;
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const delta = e.deltaY > 0 ? 0.95 : 1.05;
             imgScale = Math.max(0.1, Math.min(3, imgScale * delta));
-            
             zoomSlider.value = imgScale;
             zoomValue.textContent = imgScale.toFixed(1) + 'x';
-            
             draw();
         });
-        
-        // Zoom slider
+
+        // Sliders
         zoomSlider.addEventListener('input', (e) => {
             imgScale = parseFloat(e.target.value);
             zoomValue.textContent = imgScale.toFixed(1) + 'x';
             draw();
         });
-        
-        // Rotate slider
         rotateSlider.addEventListener('input', (e) => {
             imgRotation = parseFloat(e.target.value);
-            rotateValue.textContent = Math.round(imgRotation) + '°';
+            rotateValue.textContent = Math.round(imgRotation) + '\u00B0';
             draw();
         });
-        
-        // Reset button
-        resetBtn.addEventListener('click', () => {
-            initializeImage();
-        });
-        
-        // Calculate optimal export dimensions based on visible crop
+
+        // Reset
+        resetBtn.addEventListener('click', initializeImage);
+
+        // ----- Export -----
         function calculateOptimalDimensions() {
             if (!img) return { width: 900, height: 1200 };
-            
-            // Calculate the actual pixel dimensions of the visible crop area
-            // The canvas shows a 3:4 area, we need to find what portion of the original image is visible
-            
-            // Account for rotation by calculating the bounding box
-            const rad = imgRotation * Math.PI / 180;
-            const cos = Math.abs(Math.cos(rad));
-            const sin = Math.abs(Math.sin(rad));
-            
-            // Size of rotated image
-            const rotatedWidth = img.width * cos + img.height * sin;
-            const rotatedHeight = img.width * sin + img.height * cos;
-            
-            // Calculate how many original pixels fit in the canvas viewport
-            const visibleWidthInOriginalPixels = canvas.displayWidth / imgScale;
-            const visibleHeightInOriginalPixels = canvas.displayHeight / imgScale;
-            
-            // Since we're cropping to 3:4, use the most constraining dimension
-            let outputWidth, outputHeight;
-            
-            // Check which dimension is the limiting factor
-            const canvasAspect = 3 / 4;
-            const visibleAspect = visibleWidthInOriginalPixels / visibleHeightInOriginalPixels;
-            
-            if (visibleAspect > canvasAspect) {
-                // Height is limiting
-                outputHeight = Math.min(visibleHeightInOriginalPixels, img.height);
-                outputWidth = Math.round(outputHeight * 3 / 4);
+            const ratio = getAspectRatio();
+            const visW = canvas.displayWidth / imgScale;
+            const visH = canvas.displayHeight / imgScale;
+            const visAspect = visW / visH;
+            let outW, outH;
+            if (visAspect > ratio) {
+                outH = Math.min(visH, img.height);
+                outW = Math.round(outH * ratio);
             } else {
-                // Width is limiting  
-                outputWidth = Math.min(visibleWidthInOriginalPixels, img.width);
-                outputHeight = Math.round(outputWidth * 4 / 3);
+                outW = Math.min(visW, img.width);
+                outH = Math.round(outW / ratio);
             }
-            
-            // Ensure minimum size
-            if (outputWidth < 300) {
-                outputWidth = 300;
-                outputHeight = 400;
-            }
-            
-            // Round to even numbers for better compression
-            outputWidth = Math.round(outputWidth / 2) * 2;
-            outputHeight = Math.round(outputHeight / 2) * 2;
-            
-            return { width: outputWidth, height: outputHeight };
+            if (outW < 300) { outW = 300; outH = Math.round(300 / ratio); }
+            outW = Math.round(outW / 2) * 2;
+            outH = Math.round(outH / 2) * 2;
+            return { width: outW, height: outH };
         }
-        
-        // Export dialog functions
+
         function updateDimensions(source) {
+            const ratio = getAspectRatio();
+            let w, h;
             if (source === 'width') {
-                const width = parseInt(widthInput.value) || 900;
-                const height = Math.round(width * 4 / 3);
-                heightInput.value = height;
-                
-                // Check if using original resolution
-                if (Math.abs(width - optimalWidth) < 2 && Math.abs(height - optimalHeight) < 2) {
-                    sizeInfo.textContent = '✓ Using original resolution';
-                    sizeInfo.style.color = '#10b981';
-                } else if (width < optimalWidth) {
-                    sizeInfo.textContent = `↓ Downscaling from ${optimalWidth}×${optimalHeight}`;
-                    sizeInfo.style.color = '#f59e0b';
-                } else {
-                    sizeInfo.textContent = `↑ Upscaling from ${optimalWidth}×${optimalHeight}`;
-                    sizeInfo.style.color = '#f59e0b';
-                }
+                w = parseInt(widthInput.value) || 900;
+                h = Math.round(w / ratio);
+                heightInput.value = h;
             } else {
-                const height = parseInt(heightInput.value) || 1200;
-                const width = Math.round(height * 3 / 4);
-                widthInput.value = width;
-                
-                // Check if using original resolution
-                if (Math.abs(width - optimalWidth) < 2 && Math.abs(height - optimalHeight) < 2) {
-                    sizeInfo.textContent = '✓ Using original resolution';
-                    sizeInfo.style.color = '#10b981';
-                } else if (height < optimalHeight) {
-                    sizeInfo.textContent = `↓ Downscaling from ${optimalWidth}×${optimalHeight}`;
-                    sizeInfo.style.color = '#f59e0b';
-                } else {
-                    sizeInfo.textContent = `↑ Upscaling from ${optimalWidth}×${optimalHeight}`;
-                    sizeInfo.style.color = '#f59e0b';
-                }
+                h = parseInt(heightInput.value) || 1200;
+                w = Math.round(h * ratio);
+                widthInput.value = w;
+            }
+            if (Math.abs(w - optimalWidth) < 2 && Math.abs(h - optimalHeight) < 2) {
+                sizeInfo.textContent = 'Using original resolution';
+                sizeInfo.style.color = '#10b981';
+            } else if (w < optimalWidth) {
+                sizeInfo.textContent = 'Downscaling from ' + optimalWidth + '\u00D7' + optimalHeight;
+                sizeInfo.style.color = '#f59e0b';
+            } else {
+                sizeInfo.textContent = 'Upscaling from ' + optimalWidth + '\u00D7' + optimalHeight;
+                sizeInfo.style.color = '#f59e0b';
             }
         }
-        
-        // Width input handler
-        widthInput.addEventListener('input', () => {
-            updateDimensions('width');
-        });
-        
-        // Height input handler
-        heightInput.addEventListener('input', () => {
-            updateDimensions('height');
-        });
-        
-        // Show export dialog
+
+        widthInput.addEventListener('input', () => updateDimensions('width'));
+        heightInput.addEventListener('input', () => updateDimensions('height'));
+
         downloadBtn.addEventListener('click', () => {
             if (!img) return;
-            
-            // Calculate optimal dimensions
-            const optimal = calculateOptimalDimensions();
-            optimalWidth = optimal.width;
-            optimalHeight = optimal.height;
-            
-            // Set default values
+            const opt = calculateOptimalDimensions();
+            optimalWidth = opt.width;
+            optimalHeight = opt.height;
             widthInput.value = optimalWidth;
             heightInput.value = optimalHeight;
-            sizeInfo.textContent = '✓ Using original resolution';
+            sizeInfo.textContent = 'Using original resolution';
             sizeInfo.style.color = '#10b981';
-            
             exportDialog.classList.remove('hidden');
         });
-        
-        // Cancel export
-        cancelExport.addEventListener('click', () => {
-            exportDialog.classList.add('hidden');
-        });
-        
-        // Close dialog on overlay click
+
+        cancelExport.addEventListener('click', () => exportDialog.classList.add('hidden'));
         exportDialog.addEventListener('click', (e) => {
-            if (e.target === exportDialog) {
-                exportDialog.classList.add('hidden');
-            }
+            if (e.target === exportDialog) exportDialog.classList.add('hidden');
         });
-        
-        // Confirm export
+
         confirmExport.addEventListener('click', () => {
             if (!img) return;
-            
-            const outputWidth = parseInt(widthInput.value) || optimalWidth;
-            const outputHeight = parseInt(heightInput.value) || optimalHeight;
-            
-            const outputCanvas = document.createElement('canvas');
-            const outputCtx = outputCanvas.getContext('2d');
-            
-            // Set exact output size
-            outputCanvas.width = outputWidth;
-            outputCanvas.height = outputHeight;
-            
-            // Calculate scale factor
-            const scaleFactor = outputWidth / canvas.displayWidth;
-            
-            // White background
-            outputCtx.fillStyle = 'white';
-            outputCtx.fillRect(0, 0, outputWidth, outputHeight);
-            
-            // Draw the transformed image
-            outputCtx.save();
-            outputCtx.translate(imgX * scaleFactor, imgY * scaleFactor);
-            outputCtx.rotate(imgRotation * Math.PI / 180);
-            outputCtx.drawImage(
+            const outW = parseInt(widthInput.value) || optimalWidth;
+            const outH = parseInt(heightInput.value) || optimalHeight;
+            const outCanvas = document.createElement('canvas');
+            const outCtx = outCanvas.getContext('2d');
+            outCanvas.width = outW;
+            outCanvas.height = outH;
+            const sf = outW / canvas.displayWidth;
+            outCtx.fillStyle = bgColor;
+            outCtx.fillRect(0, 0, outW, outH);
+            outCtx.save();
+            outCtx.translate(imgX * sf, imgY * sf);
+            outCtx.rotate(imgRotation * Math.PI / 180);
+            outCtx.drawImage(
                 img,
-                -img.width * imgScale * scaleFactor / 2,
-                -img.height * imgScale * scaleFactor / 2,
-                img.width * imgScale * scaleFactor,
-                img.height * imgScale * scaleFactor
+                -img.width * imgScale * sf / 2,
+                -img.height * imgScale * sf / 2,
+                img.width * imgScale * sf,
+                img.height * imgScale * sf
             );
-            outputCtx.restore();
-            
-            // Download
-            outputCanvas.toBlob((blob) => {
+            outCtx.restore();
+            outCanvas.toBlob((blob) => {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `image-${outputWidth}x${outputHeight}.jpg`;
+                a.download = 'crop-' + outW + 'x' + outH + '.jpg';
                 a.click();
                 URL.revokeObjectURL(url);
             }, 'image/jpeg', 0.95);
-            
-            // Close dialog
             exportDialog.classList.add('hidden');
         });
-        
-        // New image button
+
+        // New image
         newImageBtn.addEventListener('click', () => {
             imageUpload.value = '';
             img = null;
             ctx.clearRect(0, 0, canvas.displayWidth, canvas.displayHeight);
             showUpload();
         });
-        
-        // Show/hide sections
+
+        // Show/hide
         function showEditor() {
             uploadSection.classList.add('hidden');
             editorSection.classList.remove('hidden');
             editorSection.style.display = 'flex';
         }
-        
         function showUpload() {
             uploadSection.classList.remove('hidden');
             uploadSection.style.display = 'flex';
             editorSection.classList.add('hidden');
         }
-        
-        // Handle window resize
+
+        // Resize handling
         window.addEventListener('resize', () => {
             if (img && !editorSection.classList.contains('hidden')) {
                 setupCanvas();
                 draw();
             }
         });
-        
-        // Handle orientation change
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 if (img && !editorSection.classList.contains('hidden')) {
@@ -986,13 +1185,22 @@
                 }
             }, 100);
         });
-        
-        // Prevent page scroll
+
+        // Prevent page scroll on canvas
         document.addEventListener('touchmove', (e) => {
             if (e.target === canvas || canvasContainer.contains(e.target)) {
                 e.preventDefault();
             }
         }, { passive: false });
+
+        // Also support dropping on the full page when upload is visible
+        document.body.addEventListener('dragover', (e) => e.preventDefault());
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!editorSection.classList.contains('hidden')) return;
+            const file = e.dataTransfer.files[0];
+            if (file) loadImageFile(file);
+        });
     </script>
 </body>
 </html>
