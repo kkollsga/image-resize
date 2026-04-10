@@ -249,6 +249,24 @@
             font-size: 0.7rem;
         }
 
+        .dim-presets {
+            width: 100%;
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            padding: 0.4rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-family: inherit;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+        }
+
+        .dim-presets:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
         .color-swatch-wrapper {
             position: relative;
             display: flex;
@@ -345,11 +363,15 @@
         .canvas-wrapper.fit-width {
             overflow-y: auto;
             align-items: flex-start;
+            padding-left: 0;
+            padding-right: 0;
         }
 
         .canvas-wrapper.fit-height {
             overflow-x: auto;
             justify-content: flex-start;
+            padding-top: 0;
+            padding-bottom: 0;
         }
 
         /* Fit mode toggle */
@@ -771,10 +793,21 @@
                         <button id="mode-ratio" class="active">Ratio</button>
                         <button id="mode-size">Size</button>
                     </div>
+                    <select id="ratio-presets" class="dim-presets">
+                        <option value="">Custom</option>
+                        <option value="1:1">1:1 — Square</option>
+                        <option value="3:2">3:2 — Photo</option>
+                        <option value="2:3">2:3 — Photo portrait</option>
+                        <option value="4:3">4:3 — Screen</option>
+                        <option value="3:4">3:4 — Screen portrait</option>
+                        <option value="16:9">16:9 — Widescreen</option>
+                        <option value="9:16">9:16 — Widescreen portrait</option>
+                        <option value="screen">Screen resolution</option>
+                    </select>
                     <div class="dim-fields" id="ratio-fields">
-                        <input type="number" class="dim-field-input" id="ratio-w" value="3" min="1" max="100">
+                        <input type="number" class="dim-field-input" id="ratio-w" value="3" min="1" max="9999">
                         <span class="dim-sep">:</span>
-                        <input type="number" class="dim-field-input" id="ratio-h" value="4" min="1" max="100">
+                        <input type="number" class="dim-field-input" id="ratio-h" value="4" min="1" max="9999">
                     </div>
                     <div class="dim-fields" id="size-fields" style="display:none;">
                         <input type="number" class="dim-field-input" id="size-w" value="900" min="1" max="9999">
@@ -922,7 +955,7 @@
         let initialRotation = 0, initialAngle = 0;
         let optimalWidth = 900, optimalHeight = 1200;
         let bgColor = '#ffffff';
-        let aspectW = 3, aspectH = 4;
+        let aspectW = screen.width, aspectH = screen.height;
         let sizeMode = 'ratio'; // 'ratio' or 'size'
         let pipetteActive = false;
         let fitMode = 'contain'; // 'contain', 'width', 'height'
@@ -939,6 +972,21 @@
                 dimDisplay.innerHTML = aspectW + '&times;' + aspectH + '<span class="dim-sub">px</span>';
             }
         }
+        // Set defaults from screen size
+        ratioW.value = aspectW;
+        ratioH.value = aspectH;
+        updateDimDisplay();
+
+        function syncPresetDropdown() {
+            const key = ratioW.value + ':' + ratioH.value;
+            const screenKey = screen.width + ':' + screen.height;
+            if (key === screenKey) {
+                ratioPresets.value = 'screen';
+            } else {
+                const match = Array.from(ratioPresets.options).find(o => o.value === key);
+                ratioPresets.value = match ? key : '';
+            }
+        }
 
         dimTrigger.addEventListener('click', () => {
             // Sync modal fields with current state
@@ -947,13 +995,16 @@
                 modeSizeBtn.classList.remove('active');
                 ratioFieldsEl.style.display = '';
                 sizeFieldsEl.style.display = 'none';
+                ratioPresets.style.display = '';
                 ratioW.value = aspectW;
                 ratioH.value = aspectH;
+                syncPresetDropdown();
             } else {
                 modeSizeBtn.classList.add('active');
                 modeRatioBtn.classList.remove('active');
                 ratioFieldsEl.style.display = 'none';
                 sizeFieldsEl.style.display = '';
+                ratioPresets.style.display = 'none';
                 sizeW.value = aspectW;
                 sizeH.value = aspectH;
             }
@@ -965,6 +1016,7 @@
             modeSizeBtn.classList.remove('active');
             ratioFieldsEl.style.display = '';
             sizeFieldsEl.style.display = 'none';
+            ratioPresets.style.display = '';
         });
 
         modeSizeBtn.addEventListener('click', () => {
@@ -972,7 +1024,27 @@
             modeRatioBtn.classList.remove('active');
             ratioFieldsEl.style.display = 'none';
             sizeFieldsEl.style.display = '';
+            ratioPresets.style.display = 'none';
         });
+
+        const ratioPresets = document.getElementById('ratio-presets');
+        ratioPresets.addEventListener('change', () => {
+            const val = ratioPresets.value;
+            if (!val) return;
+            let w, h;
+            if (val === 'screen') {
+                w = screen.width;
+                h = screen.height;
+            } else {
+                [w, h] = val.split(':').map(Number);
+            }
+            ratioW.value = w;
+            ratioH.value = h;
+        });
+
+        // Reset preset to Custom when manually editing ratio inputs
+        ratioW.addEventListener('input', () => syncPresetDropdown());
+        ratioH.addEventListener('input', () => syncPresetDropdown());
 
         dimCancel.addEventListener('click', () => dimDialog.classList.add('hidden'));
         dimDialog.addEventListener('click', (e) => {
@@ -1001,9 +1073,13 @@
         // ----- Fit mode -----
         function resizeCanvasContainer() {
             const wrapperRect = canvasWrapper.getBoundingClientRect();
-            const padding = 8;
-            const availW = wrapperRect.width - padding;
-            const availH = wrapperRect.height - padding;
+            const styles = getComputedStyle(canvasWrapper);
+            const padL = parseFloat(styles.paddingLeft) || 0;
+            const padR = parseFloat(styles.paddingRight) || 0;
+            const padT = parseFloat(styles.paddingTop) || 0;
+            const padB = parseFloat(styles.paddingBottom) || 0;
+            const availW = wrapperRect.width - padL - padR;
+            const availH = wrapperRect.height - padT - padB;
             const ratio = aspectW / aspectH;
 
             const outer = document.querySelector('.canvas-container-outer');
@@ -1057,10 +1133,16 @@
             canvasWrapper.classList.remove('fit-width', 'fit-height');
             if (fitMode === 'width') canvasWrapper.classList.add('fit-width');
             if (fitMode === 'height') canvasWrapper.classList.add('fit-height');
+
+            const oldW = canvas.displayWidth || 1;
+            const oldH = canvas.displayHeight || 1;
             resizeCanvasContainer();
             if (img) {
                 setupCanvas();
-                initializeImage();
+                // Scale image position proportionally to new canvas size
+                imgX *= canvas.displayWidth / oldW;
+                imgY *= canvas.displayHeight / oldH;
+                draw();
             }
         }
 
@@ -1356,6 +1438,24 @@
             draw();
         });
 
+        // Reset zoom/rotate by clicking their value text
+        zoomValue.addEventListener('click', () => {
+            if (!img || !canvas.displayWidth) return;
+            imgScale = Math.max(
+                canvas.displayWidth / img.width,
+                canvas.displayHeight / img.height
+            );
+            zoomSlider.value = imgScale;
+            zoomValue.textContent = imgScale.toFixed(1) + 'x';
+            draw();
+        });
+        rotateValue.addEventListener('click', () => {
+            imgRotation = 0;
+            rotateSlider.value = 0;
+            rotateValue.textContent = '0';
+            draw();
+        });
+
         // Reset
         resetBtn.addEventListener('click', initializeImage);
 
@@ -1486,22 +1586,21 @@
             editorSection.classList.add('hidden');
         }
 
-        // Resize handling
-        window.addEventListener('resize', () => {
+        // Resize handling — preserve image position relative to canvas
+        function handleResize() {
             if (img && !editorSection.classList.contains('hidden')) {
+                const oldW = canvas.displayWidth || 1;
+                const oldH = canvas.displayHeight || 1;
                 resizeCanvasContainer();
                 setupCanvas();
+                imgX *= canvas.displayWidth / oldW;
+                imgY *= canvas.displayHeight / oldH;
                 draw();
             }
-        });
+        }
+        window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                if (img && !editorSection.classList.contains('hidden')) {
-                    resizeCanvasContainer();
-                    setupCanvas();
-                    draw();
-                }
-            }, 100);
+            setTimeout(handleResize, 100);
         });
 
         // Prevent page scroll on canvas
