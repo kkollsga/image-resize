@@ -525,11 +525,14 @@
         }
 
         .slider-value {
-            width: 2.25rem;
+            min-width: 2.25rem;
             text-align: right;
             font-size: 0.65rem;
             color: #9ca3af;
             font-variant-numeric: tabular-nums;
+            position: relative;
+            z-index: 1;
+            padding: 0.3rem 0.2rem;
         }
 
         .help-text {
@@ -1566,12 +1569,10 @@
             exportDialog.classList.add('hidden');
         });
 
-        // New image
+        // New image — open file picker, keep current image if cancelled
         newImageBtn.addEventListener('click', () => {
             imageUpload.value = '';
-            img = null;
-            ctx.clearRect(0, 0, canvas.displayWidth, canvas.displayHeight);
-            showUpload();
+            imageUpload.click();
         });
 
         // Show/hide
